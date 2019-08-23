@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yyf.hap.mapper.OmOrderHeadersMapper">
+    <resultMap id="BaseResultMap" type="com.yyf.hap.dto.OmOrderHeaders">
+        <result column="HEADER_ID" property="headerId" jdbcType="DECIMAL" />
+        <result column="ORDER_NUMBER" property="orderNumber" jdbcType="VARCHAR" />
+        <result column="COMPANY_ID" property="companyId" jdbcType="DECIMAL" />
+        <result column="ORDER_DATE" property="orderDate" jdbcType="DATE" />
+        <result column="ORDER_STATUS" property="orderStatus" jdbcType="VARCHAR" />
+        <result column="CUSTOMER_ID" property="customerId" jdbcType="DECIMAL" />
+        <result column="CUSTOMER_NAME" property="customerName" jdbcType="VARCHAR" />
+        <result column="COMPANY_NAME" property="companyName" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <select id="selectOrders" parameterType="com.yyf.hap.dto.OmOrderHeaders" resultMap="BaseResultMap">
+        SELECT DISTINCT
+        hap_om_order_headers.*, hap_ar_customers.CUSTOMER_NAME AS CUSTOMER_NAME,
+        hap_org_companys.COMPANY_NAME AS COMPANY_NAME
+        FROM
+        hap_om_order_headers
+        LEFT JOIN hap_om_order_lines ON hap_om_order_headers.HEADER_ID = hap_om_order_lines.HEADER_ID
+        LEFT JOIN hap_org_companys ON hap_om_order_headers.COMPANY_ID = hap_org_companys.COMPANY_ID
+        LEFT JOIN hap_ar_customers ON hap_om_order_headers.CUSTOMER_ID = hap_ar_customers.CUSTOMER_ID
+        <where>
+            <if test="headerId != null">
+                and hap_om_order_headers.HEADER_ID = #{headerId, jdbcType=DECIMAL}
+            </if>
+            <if test="companyId != null">
+                and hap_om_order_headers.COMPANY_ID = #{companyId, jdbcType=DECIMAL}
+            </if>
+            <if test="customerId != null">
+                and hap_om_order_headers.CUSTOMER_ID = #{customerId, jdbcType=DECIMAL}
+            </if>
+            <if test="orderStatus != null">
+                and hap_om_order_headers.ORDER_STATUS = #{orderStatus, jdbcType=VARCHAR}
+            </if>
+            <if test="orderNumber">
+                and hap_om_order_headers.ORDER_NUMBER = #{orderNumber, jdbcType=VARCHAR}
+            </if>
+            <if test="inventoryItemId != null">
+                and hap_om_order_lines.INVENTORY_ITEM_ID = #{inventoryItemId, jdbcType=DECIMAL}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectOrderNumber" parameterType="String" resultMap="BaseResultMap">
+        SELECT *
+        FROM hap_om_order_headers
+        WHERE ORDER_NUMBER = #{orderNumber}
+    </select>
+
+    <delete id="deleteByHeaderId" parameterType="long">
+        DELETE FROM hap_om_order_headers
+        WHERE HEADER_ID =  #{headerId}
+    </delete>
+
+</mapper>
